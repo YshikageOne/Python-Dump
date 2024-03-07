@@ -12,6 +12,7 @@ from contextlib import contextmanager
 Base = declarative_base()
 
 class Equipment(Base):
+    #Definition of the Equipment table for the database
     __tablename__ = 'tbl_equipmentcrud'
     equipmentID = Column(Integer, primary_key=True, autoincrement=True)
     equipmentName = Column(String(255))
@@ -19,6 +20,7 @@ class Equipment(Base):
     repairStatus = Column(String(255))
 
 #Database connection
+#Establishing database connection
 engine = create_engine('mysql+mysqlconnector://root:@localhost/db_equipmentCRUD')
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
@@ -27,6 +29,7 @@ from contextlib import contextmanager
 
 @contextmanager
 def session_scope():
+    #Context manager for database session handling
     session = Session()
     try:
         yield session
@@ -41,6 +44,7 @@ def session_scope():
 
 #Create
 def create_equipment(name, schedule, history):
+    #Adds a new equipment record to the database
     with session_scope() as session:
         formatted_schedule = datetime.strptime(schedule, '%m/%d/%Y').date()
         new_equipment = Equipment(equipmentName=name, maintenanceSchedule=formatted_schedule, repairStatus=history)
@@ -49,6 +53,7 @@ def create_equipment(name, schedule, history):
 
 #Read
 def read_equipment():
+    #Retrieves all equipment records from the database
     session = Session()
     equipment_list = session.query(Equipment).all()
     session.close()
@@ -57,6 +62,7 @@ def read_equipment():
 #Update
 
 def update_equipment(id, name, schedule, history):
+    #Updates an existing equipment record in the database
     with session_scope() as session:
         equipment = session.query(Equipment).filter(Equipment.equipmentID == id).first()
         if equipment:
@@ -66,6 +72,7 @@ def update_equipment(id, name, schedule, history):
 
 #Delete
 def delete_equipment(id):
+    #Deletes an equipment record from the database
     with session_scope() as session:
         equipment = session.query(Equipment).filter(Equipment.equipmentID == id).first()
         if equipment:
@@ -90,6 +97,7 @@ class EquipmentMaintenanceSystem(QMainWindow):
 
     #Create
     def addEquipment(self):
+        #Adds equipment through the GUI
         name = self.nameEntry.text()
         schedule = self.scheduleEntry.text()
         status = self.repairStatusCombobox.currentText()
@@ -99,6 +107,7 @@ class EquipmentMaintenanceSystem(QMainWindow):
 
     #Update
     def updateEquipment(self):
+        #Updates equipment through the GUI
         selected_row = self.equipmentTable.currentRow()
         if selected_row >= 0:
             id = int(self.equipmentTable.item(selected_row, 0).text())
@@ -111,6 +120,7 @@ class EquipmentMaintenanceSystem(QMainWindow):
         
     #Delete
     def deleteEquipment(self):
+        #Deletes equipment through the GUI
         selected_row = self.equipmentTable.currentRow()
         if selected_row >= 0:
             id = int(self.equipmentTable.item(selected_row, 0).text())
@@ -120,6 +130,7 @@ class EquipmentMaintenanceSystem(QMainWindow):
 
     #Read
     def load_data_into_table(self):
+        #Loads equipment data into the GUI table
         self.equipmentTable.setRowCount(0)
         equipment_list = read_equipment()
         for equipment in equipment_list:
@@ -132,6 +143,7 @@ class EquipmentMaintenanceSystem(QMainWindow):
 
     def initUI(self):
         #Main layout container
+        #Initializes the user interface and its components
         widget = QWidget(self)
         self.setCentralWidget(widget)
         layout = QVBoxLayout()
@@ -235,6 +247,7 @@ class EquipmentMaintenanceSystem(QMainWindow):
         self.load_data_into_table()
     
     #Extra Stuff
+    #Displays a success message dialog
     def show_success_message(self, message):
         msgBox = QMessageBox()
         msgBox.setIcon(QMessageBox.Information)
@@ -243,6 +256,7 @@ class EquipmentMaintenanceSystem(QMainWindow):
         msgBox.setStandardButtons(QMessageBox.Ok)
         msgBox.exec_()
 
+    #Updates input fields based on selected table row
     def updateInputs(self):
         selected_row = self.equipmentTable.currentRow()
         if selected_row >= 0:
